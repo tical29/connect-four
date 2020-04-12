@@ -1,68 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Row from "./Row";
+
+const URL = "ws://connect-four-jp.herokuapp.com";
 
 export default function Grid() {
   const [currentPlayer, setPlayer] = useState("X");
   const [grid, setGrid] = useState(new Array(6).fill(new Array(6).fill("")));
   const [winner, setWinner] = useState("");
 
+  const webSocket = useRef(null);
+
+  useEffect(() => {
+    webSocket.current = new WebSocket(URL);
+
+    webSocket.current.onopen = (data) => {
+      console.log(data);
+    };
+
+    webSocket.current.onmessage = ({ data }) => {
+      const parsedData = JSON.parse(data);
+      const { winner, grid } = parsedData;
+
+      if (winner) {
+        setWinner(winner);
+      }
+
+      if (grid) setGrid(grid);
+    };
+    return () => webSocket.current.close();
+  }, []);
+
   function handleMove(column) {
-    const reversedGrid = [...grid.reverse()];
-
-    for (let i = 0; i < reversedGrid.length; i++) {
-      const temp = [...reversedGrid[i]];
-      if (temp[column] === "") {
-        temp[column] = currentPlayer;
-        setPlayer(currentPlayer === "X" ? "O" : "X");
-        reversedGrid.splice(i, 1, temp);
-        break;
-      }
-    }
-
-    const updatedGrid = reversedGrid.reverse();
-    setGrid(updatedGrid);
-    setWinner(checkForWin(updatedGrid));
-  }
-
-  function checkForWin(grid) {
-    const horizontalWinner = checkHorizontal(grid);
-    const verticalWinner = checkVertical(grid);
-    if (horizontalWinner !== null) {
-      return horizontalWinner;
-    } else if (verticalWinner !== null) {
-      return verticalWinner;
-    }
-  }
-
-  function checkHorizontal(grid) {
-    for (let row of grid) {
-      let count = 1;
-      let current;
-      for (let i = 1; i < row.length; i++) {
-        if (row[i] === current && current !== "") {
-          count++;
-        } else {
-          count = 1;
-          current = row[i];
-        }
-        if (count === 4) {
-          return current;
-        }
-      }
-    }
-    return null;
-  }
-
-  function checkVertical(grid) {
-    const columns = [];
-    for (let i = 0; i < grid.length; i++) {
-      let column = [];
-      for (let x = 0; x < grid.length; x++) {
-        column.push(grid[x][i]);
-      }
-      columns.push(column);
-    }
-    return checkHorizontal(columns);
+    webSocket.current.send(JSON.stringify({ column, currentPlayer, grid }));
   }
 
   const rows = grid.map((row, index) => (
