@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import Row from "./Row";
 
-const URL = "ws://connect-four-jp.herokuapp.com";
+const URL = "wss://connect-four-jp.herokuapp.com";
 
 export default function Grid() {
   const [currentPlayer, setPlayer] = useState("X");
