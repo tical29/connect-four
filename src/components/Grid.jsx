@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Navbar, Col, Container } from "react-bootstrap";
 import Row from "./Row";
 
 const URL = "wss://connect-four-jp.herokuapp.com";
@@ -39,9 +40,13 @@ export default function Grid() {
   ));
 
   return (
-    <div>
-      {rows}
+    <Container>
+      <Navbar bg="light" expand="lg">
+        <Navbar.Brand href="#home">Connect Four with Raluca</Navbar.Brand>
+      </Navbar>
+
+      <Col className="justify-content-md-center">{rows}</Col>
       {winner && `Winner is: ${winner}`}
-    </div>
+    </Container>
   );
 }
